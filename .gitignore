@@ -1,0 +1,69 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+.log/
+log/
+.LOG_FILE_IS_UNDEFINED
+LOG_FILE_IS_UNDEFINED
+
+.arcconfig
+.DS_Stores
+.DS_Store
+.upload.sh
+logs/
+.logs/
+config-cache
+
+
+### build ### 
+*/target
+*/output/*
+
+# eclipse files
+.project
+/.settings
+*/*.project
+*/.settings
+*/.classpath
+*/*.factorypath
+*.jar
+
+### local conf ###
+**/application.yaml.local
+**/application.yaml.dev
+
+### http ###
+**/http/*.http
