@@ -30,53 +30,27 @@ apikey生成是在平台生成的，不对外提供接口
 
 ### 签名算法
 
-拟定的一个，还需要修改，暂时可以不考虑
-* apiId放入参数
-* utc的时间ts戳放入参数， ts的有效期为1800s
-* 混合所有需要的最外层参数，不包含sign，进行排序，用 `&` 拼接成所有key一个字符串,ts，apiId需要加入值，用`=`分割运算，然后再加入apiSecret
+拟定的一个，还需要修改
+* 请求的header需要3个参数Api-Id,Api-Ts,Api-Sign
+* Api-Id 是颁发的id,
+* Api-Ts 代表当前UTC 时间戳， ts的有效期为1800s
+* Api-Sign 验签的签名串
+* 签名算法是请求body序列化后，然后进行字符排序，然后拼接Api-Id,Api-Ts,secret. secret 是Api-Id一起颁发的密钥，注意保密
 * 将上述拼接的字符串，用md5加密算法进行签名
+* 加密过程参考ApiSignUtil
 
-1. 举例1, 实际有用参数如下
-```json
-{
-  "num": 2,
-  "rewardAddress": "0x725b5f77496182ffdf67df1fa84cbb5f6111c2b4",
-  "other": {
-    "aa": "123",
-    "bb": "456"
-  }
-}
+1. 举例1, 实际参数如下
+请求header:
+```shell
+Api-Id: c1
+Api-Ts: 1685346885
+Api-Sign: 46d2d7ccd318f307a9b62d9e72287541
 ```
-2. 加入签名参数，变为如下
+请求body
 ```json
 {
-  "num": 2,
-  "rewardAddress": "0x725b5f77496182ffdf67df1fa84cbb5f6111c2b4",
-  "other": {
-    "aa": "123",
-    "bb": "456"
-  },
-  "apiId": "xxxx",
-  "ts": 1682393064
-}
-```
-
-3. 按照排序拼接所有参数
-`apiId=xxx&num&other&rewardAddress&ts=1682393064&xxxxsecretKeyxxxxx`
-4. 计算上述md5值为
-`1c5900ae27ebb4fde7e4f40b54da974c`
-5. 加上签名拼接参数
-```json
-{
-  "num": 2,
-  "rewardAddress": "0x725b5f77496182ffdf67df1fa84cbb5f6111c2b4",
-  "other": {
-    "aa": "123",
-    "bb": "456"
-  },
-  "apiId": "xxxx",
-  "ts": 1682393064,
-  "sign": "1c5900ae27ebb4fde7e4f40b54da974c"
+  "num": 1,
+  "rewardAddress": "0x555d46a4670b380473e5aedbac41487b2aadc050"
 }
 ```
 
@@ -99,10 +73,7 @@ IP白名单设置
 ```json
 {
   "num": 2,
-  "rewardAddress": "0x725b5f77496182ffdf67df1fa84cbb5f6111c2b4",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "947dc49f219d30199b48f0ecc98a9af9"
+  "rewardAddress": "0x725b5f77496182ffdf67df1fa84cbb5f6111c2b4"
 }
 ```
 
@@ -112,9 +83,6 @@ IP白名单设置
 {
   "code": 200,
   "message": "",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "ac7dc49f219d30199b48f0ecc98a15da",
   "data": {
     "deposits": [
       {
@@ -146,10 +114,7 @@ IP白名单设置
   "pubKeys": [
     "0xa9f4ef8b278e9a72b42ae52b6287b8ea271f14457c63b5cce4da4dab4f02a984f20cd3402028a44107fb91606c092372",
     "0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453"
-  ],
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "947dc49f219d30199b48f0ecc98a9af9"
+  ]
 }
 ```
 
@@ -159,10 +124,7 @@ IP白名单设置
 {
   "code": 200,
   "message": "",
-  "data": "",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "ac7dc49f219d30199b48f0ecc98a15da"
+  "data": ""
 }
 ```
 
@@ -176,10 +138,7 @@ IP白名单设置
 
 ```json
 {
-  "pubKey": "0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "947dc49f219d30199b48f0ecc98a9af9"
+  "pubKey": "0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453"
 }
 ```
 
@@ -189,10 +148,7 @@ IP白名单设置
 {
   "code": 200,
   "message": "",
-  "apiId": "APIId",
-  "data": "",
-  "ts": 1682393064,
-  "sign": "ac7dc49f219d30199b48f0ecc98a15da"
+  "data": ""
 }
 ```
 
@@ -204,10 +160,7 @@ IP白名单设置
 
 ```json
 {
-  "pubKey": "0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "947dc49f219d30199b48f0ecc98a9af9"
+  "pubKey": "0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453"
 }
 ```
 
@@ -217,9 +170,6 @@ IP白名单设置
 {
   "code": 200,
   "message": "",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "ac7dc49f219d30199b48f0ecc98a15da",
   "data": {
     "pubKey": "0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453",
     "exitStatus": 5,
@@ -239,10 +189,7 @@ IP白名单设置
 
 ```json
 {
-  "pubKey": "0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "947dc49f219d30199b48f0ecc98a9af9"
+  "pubKey": "0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453"
 }
 ```
 
@@ -252,9 +199,6 @@ IP白名单设置
 {
   "code": 200,
   "message": "",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "ac7dc49f219d30199b48f0ecc98a15da",
   "data": {
     "pubKey": "公钥",
     "validatorIndex": 123456,
@@ -306,10 +250,7 @@ IP白名单设置
 
 ```json
 {
-  "pubKeys": ["0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453"],
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "947dc49f219d30199b48f0ecc98a9af9"
+  "pubKeys": ["0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453"]
 }
 ```
 
@@ -323,9 +264,6 @@ IP白名单设置
 {
   "code": 200,
   "message": "",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "ac7dc49f219d30199b48f0ecc98a15da",
   "data": [{
     "pubKey": "公钥",
     "validatorIndex": 123456,
@@ -378,10 +316,7 @@ IP白名单设置
 ```json
 {
   "pageNum": 1,
-  "pageSize": 10,
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "947dc49f219d30199b48f0ecc98a9af9"
+  "pageSize": 10
 }
 ```
 
@@ -396,9 +331,6 @@ IP白名单设置
 {
   "code": 200,
   "message": "",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "ac7dc49f219d30199b48f0ecc98a15da",
   "data": {
     "pageNum": 1,
     "pageSize": 10,
@@ -447,10 +379,7 @@ IP白名单设置
   "startAt": 1682100000,
   "endAt": 1682393064,
   "pageNum": 1,
-  "pageSize": 10,
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "947dc49f219d30199b48f0ecc98a9af9"
+  "pageSize": 10
 }
 ```
 
@@ -469,9 +398,6 @@ IP白名单设置
 {
   "code": 200,
   "message": "",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "ac7dc49f219d30199b48f0ecc98a15da",
   "data": {
     "pageNum": 1,
     "pageSize": 10,
@@ -514,10 +440,7 @@ IP白名单设置
   "startAt": 1682100000,
   "endAt": 1682393064,
   "pageNum": 1,
-  "pageSize": 10,
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "947dc49f219d30199b48f0ecc98a9af9"
+  "pageSize": 10
 }
 ```
 
@@ -527,9 +450,6 @@ IP白名单设置
 {
   "code": 200,
   "message": "",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "ac7dc49f219d30199b48f0ecc98a15da",
   "data": {
     "pageNum": 1,
     "pageSize": 10,
@@ -562,10 +482,7 @@ IP白名单设置
   "startAt": 1682100000,
   "endAt": 1682393064,
   "pageNum": 1,
-  "pageSize": 10,
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "947dc49f219d30199b48f0ecc98a9af9"
+  "pageSize": 10
 }
 ```
 
@@ -575,9 +492,6 @@ IP白名单设置
 {
   "code": 200,
   "message": "",
-  "apiId": "APIId",
-  "ts": 1682393064,
-  "sign": "ac7dc49f219d30199b48f0ecc98a15da",
   "data": {
     "pageNum": 1,
     "pageSize": 10,
