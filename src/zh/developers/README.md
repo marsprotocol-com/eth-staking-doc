@@ -66,7 +66,7 @@ IP白名单设置
 
 ### 申请deposit文件
 
-接口 `POST /v1/outward/node/init/create`
+接口 `POST /v1/api/eth/node/init/create`
 
 请求参数
 
@@ -103,7 +103,7 @@ IP白名单设置
 * 支付完成入库生成质押记录，质押节点表
 * 交易txId为可选参数，尽量传递过来
 
-接口 `POST /v1/outward/node/init/paid`
+接口 `POST /v1/api/eth/node/init/paid`
 
 请求参数
 
@@ -132,7 +132,7 @@ IP白名单设置
 
 ### 申请节点退出
 
-接口 `POST /v1/outward/node/exit/apply`
+接口 `POST /v1/api/eth/node/exit/apply`
 
 请求参数
 
@@ -154,7 +154,7 @@ IP白名单设置
 
 ### 查询节点退出状态
 
-接口 `POST /v1/outward/node/exit/status`
+接口 `POST /v1/api/eth/node/exit/status`
 
 请求参数
 
@@ -183,7 +183,7 @@ IP白名单设置
 
 ### 查询单个节点
 
-接口 `POST /v1/outward/node/detail/one`
+接口 `POST /v1/api/eth/node/detail/one`
 
 请求参数
 
@@ -244,7 +244,7 @@ IP白名单设置
 
 ### 查询多个节点
 
-接口 `POST /v1/outward/node/detail/many`
+接口 `POST /v1/api/eth/node/detail/many`
 
 请求参数
 
@@ -309,7 +309,7 @@ IP白名单设置
 
 ### 查询所有节点(分页)
 
-接口 `POST /v1/outward/node/detail/all`
+接口 `POST /v1/api/eth/node/detail/all`
 
 请求参数
 
@@ -369,7 +369,7 @@ IP白名单设置
 ### withdraw收益
 
 打到钱包的收益
-接口 `POST /v1/outward/node/reward/withdraw`
+接口 `POST /v1/api/eth/node/reward/withdraw`
 
 请求参数
 
@@ -430,7 +430,7 @@ IP白名单设置
 
 ### 质押收益
 
-接口 `POST /v1/outward/node/reward/stake`
+接口 `POST /v1/api/eth/node/reward/stake`
 
 请求参数
 
@@ -474,7 +474,7 @@ IP白名单设置
 
 ### mev收益
 
-接口 `POST /v1/outward/node/reward/mev`
+接口 `POST /v1/api/eth/node/reward/mev`
 
 ```json
 {
