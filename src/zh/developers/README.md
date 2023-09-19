@@ -98,36 +98,6 @@ IP白名单设置
 }
 ```
 
-### 支付完成反馈
-
-* 支付完成入库生成质押记录，质押节点表
-* 交易txId为可选参数，尽量传递过来
-
-接口 `POST /v1/api/eth/node/init/paid`
-
-请求参数
-
-```json
-{
-  "txId": "0xa9f4ef8b278e9a72b42ae52b6287b8ea271f14457c63b5cce4da4dab4f02a984f20cd3402028",
-  "payAddress": "0x725b5f77496182ffdf67df1fa84cbb5f6111c2b4",
-  "pubKeys": [
-    "0xa9f4ef8b278e9a72b42ae52b6287b8ea271f14457c63b5cce4da4dab4f02a984f20cd3402028a44107fb91606c092372",
-    "0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453"
-  ]
-}
-```
-
-响应数据
-
-```json
-{
-  "code": 200,
-  "message": "",
-  "data": ""
-}
-```
-
 ## 节点退出
 
 ### 申请节点退出
@@ -138,9 +108,16 @@ IP白名单设置
 
 ```json
 {
-  "pubKey": "0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453"
+  "pubKey": "0x8eafeea384b111f90b80a733d6c713022d54ec4a612d000383c1775b804fb603485656f790bb679c5f6e8ecf848b3453",
+  "ts": 1682393064,
+  "signature": "0xeea1795228e7ccbca3c9e3ac1eed37e73895a76123dfc837b24dcca4d97aea2e34a94d7926882a77ac7fd67589857e17a3584fc22a453ad1fae10fe52b439e011c"
 }
 ```
+| 列            | 说明             |
+|--------------|----------------|
+| pubKey       | 节点公钥           |
+| ts           | 收益数量           |
+| signature    | 签名，钱包私钥对ts做的签名 |
 
 响应数据
 
@@ -205,6 +182,7 @@ IP白名单设置
     "payAddress": "支付地址",
     "rewardAddress": "收益地址",
     "status": 4,
+    "exitStatus": 0,
     "statusMsg": "ACTIVE",
     "balanceNum": 32.123456,
     "rewardNum": 0.765432,
@@ -270,6 +248,7 @@ IP白名单设置
     "payAddress": "支付地址",
     "rewardAddress": "收益地址",
     "status": 4,
+    "exitStatus": 0,
     "statusMsg": "ACTIVE",
     "balanceNum": 32.123456,
     "rewardNum": 0.765432,
@@ -343,6 +322,7 @@ IP白名单设置
         "payAddress": "支付地址",
         "rewardAddress": "收益地址",
         "status": 4,
+        "exitStatus": 0,
         "statusMsg": "ACTIVE",
         "balanceNum": 32.123456,
         "rewardNum": 0.765432,
@@ -510,3 +490,436 @@ IP白名单设置
   }
 }
 ```
+
+## 平台
+### 收益率查询
+
+接口 `POST /v1/api/eth/apr/organ`
+* 获取平台相关收益率
+
+请求参数，无
+
+响应数据
+```json
+{
+  "code": 200,
+  "data": {
+    "apr": "3.43",
+    "mevApr": "2.02",
+    "ts": 1695028092
+  },
+  "message": "请求成功",
+  "success": true
+}
+```
+| 列      | 说明     |
+|--------|--------|
+| apr    | 共识层收益率 |
+| mevApr | mev收益率 |
+
+## 用户MEV操作
+* 这里面的用户指的是收益钱包的地址
+
+### 用户mev余额查询
+
+接口 `POST /v1/api/eth/mev/balance`
+
+请求参数
+```json
+{
+  "rewardAddress": "0x96774c64dc3F46f64d17034CE6cf7b2eF31da56A"
+}
+```
+
+响应数据
+```json
+{
+  "code": 200,
+  "data": {
+    "balance": "2.581006",
+    "balanceLock": "0.004",
+    "rewardAddress": "0x96774c64dc3F46f64d17034CE6cf7b2eF31da56A",
+    "ts": 1691985128
+  },
+  "message": "请求成功",
+  "success": true
+}
+```
+| 列             | 说明            |
+|---------------|---------------|
+| balance       | 余额            |
+| balanceLock   | 锁定中的余额，提款中的额度 |
+| rewardAddress | 收益地址          |
+| ts            | 时间戳           |
+
+### 用户mev 提取申请
+接口 `POST /v1/api/eth/mev/claim/create`
+* 先向后端发起提款申请，获取nonce, amount, signature
+* 然后带着这些参数，向分润合约发起取款接口调用
+
+请求参数
+```json
+{
+  "rewardAddress": "0x96774c64dc3F46f64d17034CE6cf7b2eF31da56A",
+  "amount": "0.004"
+}
+```
+
+响应数据
+```json
+{
+  "code": 0,
+  "data": {
+    "amount": 4000000000000000,
+    "nonce": 8,
+    "rewardAddress": "0x96774c64dc3F46f64d17034CE6cf7b2eF31da56A",
+    "signature": ""
+  },
+  "message": "string",
+  "success": true
+}
+```
+| 列               | 说明                       |
+|-----------------|--------------------------|
+| amount          | 数量，单位wei                 |
+| nonce           | 取款任务ID，合约当中对于每个钱包维护了一个ID |
+| rewardAddress   | 收益地址                     |
+| signature       | 签名                       |
+
+### 用户mev 提取进度查询
+接口 `POST /v1/api/eth/mev/claim/progress`
+
+请求参数
+```json
+{
+  "nonce": 1,
+  "rewardAddress": "0x96774c64dc3F46f64d17034CE6cf7b2eF31da56A"
+}
+```
+
+响应数据
+```json
+{
+  "code": 200,
+  "data": {
+    "amount": "0.004",
+    "amountWei": 4000000000000000,
+    "nonce": 1,
+    "rewardAddress": "0x96774c64dc3F46f64d17034CE6cf7b2eF31da56A",
+    "signature": "27abb7db3102ebd3375b3908c21548a5366ab05e4899c06936923ac5f0a7a69e15297807766f3ed8efa5e601dfcc7b9933adc87c161323bbca5dea907a8da4d51b",
+    "status": 0
+  },
+  "message": "请求成功",
+  "success": true
+}
+```
+| 列             | 说明                                |
+|---------------|-----------------------------------|
+| amount        | 数量                                |
+| amountWei     | 数量，单位wei                          |
+| nonce         | 取款任务ID，合约当中对于每个钱包维护了一个ID          |
+| rewardAddress | 收益地址                              |
+| signature     | 签名                                |
+| status        | 状态，0 使用中, 1 完成, 2 失败, 3 不存在或已经被取消 |
+
+
+## 用户收益
+
+### 用户收益的天数据
+
+接口 `POST /v1/api/eth/user/reward/daily`
+* 获取收益钱包的某一天的收益数据
+
+请求参数
+```json
+{
+  "date": "2023-07-24",
+  "rewardAddress": "0xF1616ACBdd4eeD9Dc7FB2a8AB8e065F46fE61676"
+}
+```
+
+响应数据
+```json
+{
+  "code": 200,
+  "data": {
+    "amountMev": "0.0",
+    "amountStake": "0.0",
+    "date": "2023-07-24",
+    "rewardAddress": "0xF1616ACBdd4eeD9Dc7FB2a8AB8e065F46fE61676"
+  },
+  "message": "请求成功",
+  "success": true
+}
+```
+| 列             | 说明      |
+|---------------|---------|
+| amountMev     | mev收益数量 |
+| amountStake   | 共识层收益数量 |
+| date          | 日期      |
+| rewardAddress | 收益钱包地址  |
+
+### 用户mev出账记录查询
+
+接口 `POST /v1/api/eth/user/reward/mev/claim`
+* 获取收益钱包的提取记录
+
+请求参数
+```json
+{
+  "pageNum": 1,
+  "pageSize": 10,
+  "rewardAddress": "0x96774c64dc3F46f64d17034CE6cf7b2eF31da56A"
+}
+```
+
+响应数据
+```json
+{
+  "code": 200,
+  "data": {
+    "data": [
+      {
+        "amount": 4000000000000000,
+        "blockNumber": 0,
+        "blockTimestamp": 0,
+        "createdAt": 1691973498,
+        "nonce": 1,
+        "rewardAddress": "0x96774c64dc3F46f64d17034CE6cf7b2eF31da56A",
+        "status": 0,
+        "transactionHash": "0"
+      }
+    ],
+    "pageNum": 1,
+    "pageSize": 10,
+    "totalCount": 1,
+    "totalPage": 1
+  },
+  "message": "请求成功",
+  "success": true
+}
+```
+| 列               | 说明                                |
+|-----------------|-----------------------------------|
+| amount          | 提取数量，单位wei                        |
+| blockNumber     | 区块号                               |
+| blockTimestamp  | 块交易时间                             |
+| createdAt       | 创建时间                              |
+| nonce           | 钱包claim的ID                        |
+| rewardAddress   | 钱包地址                              |
+| status          | 状态，0 使用中, 1 完成, 2 失败, 3 不存在或已经被取消 |
+| transactionHash | 交易Hash                            |
+
+
+### 用户mev入账记录查询
+
+接口 `POST /v1/api/eth/user/reward/mev/receive`
+* 获取收益钱包的入账记录
+
+请求参数
+```json
+{
+  "pageNum": 1,
+  "pageSize": 10,
+  "rewardAddress": "0x2324b024aAC834CBE050718848AC56f607587dc8"
+}
+```
+
+响应数据
+```json
+{
+  "code": 200,
+  "data": {
+    "data": [
+      {
+        "amount": "0.006",
+        "createdAt": 1691440740,
+        "date": "2023-08-08",
+        "rewardAddress": "0x2324b024aAC834CBE050718848AC56f607587dc8"
+      }
+    ],
+    "pageNum": 1,
+    "pageSize": 10,
+    "totalCount": 1,
+    "totalPage": 1
+  },
+  "message": "请求成功",
+  "success": true
+}
+```
+| 列               | 说明                                |
+|-----------------|-----------------------------------|
+| amount          | 提取数量，单位wei                        |
+| blockNumber     | 区块号                               |
+| blockTimestamp  | 块交易时间                             |
+| createdAt       | 创建时间                              |
+| nonce           | 钱包claim的ID                        |
+| rewardAddress   | 钱包地址                              |
+| status          | 状态，0 使用中, 1 完成, 2 失败, 3 不存在或已经被取消 |
+| transactionHash | 交易Hash                            |
+
+## 服务商收益
+
+### 服务商余额
+接口 `POST /v1/api/eth/sp/reward/balance`
+* 获取收益钱包的某一天的收益数据
+
+请求参数，无
+
+响应数据
+```json
+{
+  "code": 200,
+  "data": {
+    "balance": "0.00038",
+    "balanceClaimed": "0",
+    "balanceHistory": "0.00038",
+    "balanceLock": "0",
+    "rewardAddress": "",
+    "updatedAt": 1691973498
+  },
+  "message": "请求成功",
+  "success": true
+}
+```
+| 列               | 说明      |
+|-----------------|---------|
+| balance         | 余额      |
+| balanceClaimed  | 已取款金额   |
+| balanceHistory  | 历史总获得收益 |
+| balanceLock     | 锁定余额    |
+| rewardAddress   | 收益钱包    |
+| updatedAt       | 更新时间    |
+
+### 服务商日的收益数据
+
+接口 `POST /v1/api/eth/sp/reward/daily`
+* 获取收益钱包的某一天的收益数据
+
+请求参数
+```json
+{
+  "date": "2023-08-02"
+}
+```
+
+响应数据
+```json
+{
+  "code": 200,
+  "data": {
+    "amountReceive": "0.0",
+    "amountTransfer": "0.0",
+    "date": "2023-08-02"
+  },
+  "message": "请求成功",
+  "success": true
+}
+```
+| 列               | 说明   |
+|-----------------|------|
+| amountReceive   | 入账数量 |
+| amountTransfer  | 出账数量 |
+| date            | 日期   |
+
+### 服务商出账记录查询
+
+接口 `POST /v1/api/eth/sp/reward/transfer`
+* 后去服务商的出账记录
+
+请求参数
+```json
+{
+  "pageNum": 1,
+  "pageSize": 10
+}
+```
+
+响应数据
+```json
+{
+  "code": 200,
+  "data": {
+    "data": [
+      {
+        "addr": "0x96774c64dc3F46f64d17034CE6cf7b2eF31da56A",
+        "amount": "0.004",
+        "balance": "0.04",
+        "blockTimestamp": 1691973498,
+        "createdAt": 1695084537,
+        "date": "2023-08-02",
+        "mevType": 1,
+        "transactionHash": "string"
+      }
+    ],
+    "pageNum": 1,
+    "pageSize": 10,
+    "totalCount": 1,
+    "totalPage": 1
+  },
+  "message": "请求成功",
+  "success": true
+}
+```
+| 列               | 说明                          |
+|-----------------|-----------------------------|
+| addr            | 提款到账地址                      |
+| amount          | 数量                          |
+| balance         | 当前余额                        |
+| blockTimestamp  | 块交易时间戳                      |
+| createdAt       | 创建时间                        |
+| date            | 日期                          |
+| mevType         | 奖励类型 1 mev直接奖励  2 block出块奖励 |
+| transactionHash | 交易Hash                      |
+
+
+
+### 服务商入账记录查询
+
+接口 `POST /v1/api/eth/sp/reward/receive`
+* 后去服务商的入账记录
+
+请求参数
+```json
+{
+  "pageNum": 1,
+  "pageSize": 10
+}
+```
+
+响应数据
+```json
+{
+  "code": 200,
+  "data": {
+    "data": [
+      {
+        "addr": "0x96774c64dc3F46f64d17034CE6cf7b2eF31da56A",
+        "amount": "0.00038",
+        "balance": "0.00038",
+        "blockTimestamp": 1691363364,
+        "createdAt": 1691466215,
+        "date": "2023-08-07",
+        "mevType": 2,
+        "transactionHash": "string"
+      }
+    ],
+    "pageNum": 1,
+    "pageSize": 10,
+    "totalCount": 1,
+    "totalPage": 1
+  },
+  "message": "请求成功",
+  "success": true
+}
+```
+| 列               | 说明                          |
+|-----------------|-----------------------------|
+| addr            | 分账地址                        |
+| amount          | 数量                          |
+| balance         | 当前余额                        |
+| blockTimestamp  | 块交易时间戳                      |
+| createdAt       | 创建时间                        |
+| date            | 日期                          |
+| mevType         | 奖励类型 1 mev直接奖励  2 block出块奖励 |
+| transactionHash | 交易Hash                      |
